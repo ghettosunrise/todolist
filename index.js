@@ -1,12 +1,16 @@
-import React, { useState, Fragment } from "react";
+import { hot } from "react-hot-loader/root";
+import React, { useState, useEffect, Fragment } from "react";
 import ReactDOM from "react-dom";
 import styled from "styled-components";
+
+const Root = document.getElementById("root");
+export default hot(Root);
 
 const Button = styled.button`
   border: none;
   outline: none;
   font-size: 12px;
-  color: deepskyblue;
+  color: white;
   background: transparent;
   cursor: pointer;
 `;
@@ -52,7 +56,7 @@ const ToDoItemWrap = styled.div`
   }
 
   &:hover {
-    background: #9d9d9d;
+    background: #c5c5c5;
     color: white;
 
     & .ButtonsWrap {
@@ -72,6 +76,9 @@ const Input = styled.input`
   transition: 0.25s all ease;
   margin-bottom: 10px;
   font-size: 16px;
+  padding-left: 15px;
+  text-decoration: ${props =>
+    props.isFinished ? "line-through" : "transparent"};
 `;
 
 const AddNew = styled.button`
@@ -98,31 +105,42 @@ const CheckBox = styled.div`
   width: 15px;
   height: 15px;
   border: 1px solid black;
+  background: ${props => (props.isFinished ? "black" : "transparent")};
+  cursor: pointer;
 `;
 
-// const AddToDo = () => {
-//   render(<ToDoWrapper></ToDoWrapper>);
-// };
+const ToDoItem = ({ deleteItem, updateItem, item }) => {
+  const [isFinished, setIsFinished] = useState(false);
+  const [isDisabled, setIsDisabled] = useState(!item.new);
 
-const ToDoItem = ({ deleteItem, item }) => {
-  const [isDisabled, setIsDisabled] = useState(true);
+  const onChange = event =>
+    updateItem(item.id, {
+      ...item,
+      value: event.target.value
+    });
 
-  const openInput = () => {
-    setIsDisabled(false);
-  };
-
-  const closeInput = () => {
-    setIsDisabled(true);
-  };
+  const finishToDoToggle = () => setIsFinished(!isFinished);
 
   return (
     <div className="inputWrap">
-      <CheckBox></CheckBox>
+      <CheckBox isFinished={isFinished} onClick={finishToDoToggle}></CheckBox>
       <ToDoItemWrap>
-        <Input type="text" defaultValue="" disabled={isDisabled} />
-        {isDisabled ? (
+        <Input
+          type="text"
+          onBlur={() => setIsDisabled(true)}
+          onChange={onChange}
+          isFinished={isFinished}
+          disabled={isDisabled}
+          value={item.value}
+        />
+
+        {isDisabled && isFinished ? (
           <div className="ButtonsWrap">
-            <Button onClick={openInput}>Edit</Button>
+            <Button onClick={() => deleteItem(item.id)}>Delete</Button>
+          </div>
+        ) : isDisabled ? (
+          <div className="ButtonsWrap">
+            <Button onClick={() => setIsDisabled(false)}>Edit</Button>
             <Button onClick={() => deleteItem(item.id)}>Delete</Button>
           </div>
         ) : (
@@ -136,12 +154,35 @@ const ToDoItem = ({ deleteItem, item }) => {
 };
 
 const ToDoList = () => {
-  const [todoItems, setTodoItems] = useState({});
+  const [todoItems, setTodoItems] = useState(
+    JSON.parse(localStorage.getItem("todoItems") || "{}")
+  );
+
+  useEffect(() => {
+    localStorage.setItem("todoItems", JSON.stringify(todoItems));
+  }, [todoItems]);
 
   const deleteItem = id => {
+    console.log("before Update", id, todoItems);
     const newTodoItems = { ...todoItems };
 
     delete newTodoItems[id];
+
+    console.log("after Update", newTodoItems);
+
+    setTodoItems(newTodoItems);
+  };
+
+  // const onChange = event => setValue
+
+  const updateItem = (id, newItem) => {
+    console.log("before Update", id, todoItems);
+    const newTodoItems = {
+      ...todoItems,
+      [id]: newItem
+    };
+
+    console.log("after Update", newTodoItems);
 
     setTodoItems(newTodoItems);
   };
@@ -149,7 +190,12 @@ const ToDoList = () => {
   return (
     <ToDoWrapper>
       {Object.keys(todoItems).map(key => (
-        <ToDoItem deleteItem={deleteItem} item={todoItems[key]} />
+        <ToDoItem
+          key={key}
+          deleteItem={deleteItem}
+          updateItem={updateItem}
+          item={todoItems[key]}
+        />
       ))}
       <AddNew
         onClick={() => {
@@ -157,7 +203,8 @@ const ToDoList = () => {
             ...todoItems,
             [new Date().getTime()]: {
               id: new Date().getTime(),
-              text: "Do this"
+              text: "Do this",
+              new: true
             }
           });
         }}
@@ -168,4 +215,4 @@ const ToDoList = () => {
   );
 };
 
-ReactDOM.render(<ToDoList />, document.getElementById("root"));
+ReactDOM.render(<ToDoList />, Root);

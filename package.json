@@ -13,7 +13,7 @@
     "babel-loader": "^8.0.6",
     "html-webpack-plugin": "^3.2.0",
     "react": "^16.10.2",
-    "react-dom": "^16.10.2",
+    "react-dom": "npm:@hot-loader/react-dom",
     "react-hot-loader": "^4.12.15",
     "styled-components": "^4.4.0",
     "webpack": "^4.41.0",

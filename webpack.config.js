@@ -7,6 +7,15 @@ module.exports = {
   output: {
     path: path.resolve("build")
   },
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        loader: "babel-loader"
+      }
+    ]
+  },
   plugins: [
     new HTMLWebpackPlugin({
       template: path.resolve("index.tpl.html"),
@@ -17,16 +26,16 @@ module.exports = {
   devServer: {
     contentBase: path.resolve("public"),
     port: 9000
-  },
-  module: {
-    rules: [
-      {
-        test: /\.m?js$/,
-        exclude: /(node_modules|bower_components)/,
-        use: {
-          loader: "babel-loader"
-        }
-      }
-    ]
   }
+  // module: {
+  //   rules: [
+  //     {
+  //       test: /\.m?js$/,
+  //       exclude: /(node_modules|bower_components)/,
+  //       use: {
+  //         loader: "babel-loader"
+  //       }
+  //     }
+  //   ]
+  // }
 };
